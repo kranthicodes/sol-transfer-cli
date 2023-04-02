@@ -1,3 +1,4 @@
+const inquirer = require("inquirer");
 // Import Solana web3 functinalities
 const {
     Connection,
@@ -32,14 +33,11 @@ const DEMO_FROM_SECRET_KEY = new Uint8Array(
 const transferSol = async() => {
     const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
 
-    // Get Keypair from Secret Key
-    var from = Keypair.fromSecretKey(DEMO_FROM_SECRET_KEY);
-
     // Other things to try: 
     // 1) Form array from userSecretKey
     // const from = Keypair.fromSecretKey(Uint8Array.from(userSecretKey));
     // 2) Make a new Keypair (starts with 0 SOL)
-    // const from = Keypair.generate();
+    const from = Keypair.generate();
 
     // Generate another Keypair (account we'll be sending to)
     const to = Keypair.generate();
@@ -63,7 +61,9 @@ const transferSol = async() => {
     });
 
     console.log("Airdrop completed for the Sender account");
-
+    const senderBal = await connection.getBalance(new PublicKey(from.publicKey));
+    const receiverBal = await connection.getBalance(new PublicKey(to.publicKey))
+    console.log(`Sender Balance before transfer: ${senderBal}\nReceiver Balance before transfer: ${receiverBal}`);
     // Send money from "from" wallet and into "to" wallet
     var transaction = new Transaction().add(
         SystemProgram.transfer({
@@ -80,6 +80,10 @@ const transferSol = async() => {
         [from]
     );
     console.log('Signature is', signature);
+    const senderBalAfter = await connection.getBalance(new PublicKey(from.publicKey));
+    const receiverBalAfter = await connection.getBalance(new PublicKey(to.publicKey))
+    console.log(`Sender Balance before transfer: ${senderBalAfter}\nReceiver Balance before transfer: ${receiverBalAfter}`);
 }
+
 
 transferSol();
